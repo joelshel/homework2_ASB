@@ -53,7 +53,6 @@ end;
 
 
 import sys
-from os.path import isfile
 
 def open_fasta(fasta_file=''):
     try:
@@ -141,3 +140,4 @@ if __name__ == '__main__':
     nexus = make_nexus(sys.argv[1])
     nchar = nchar(lines)
     write_nexus(nexus, lines, True, name_lines_formated, ntax=len(name_lines), nchar=nchar)
+
