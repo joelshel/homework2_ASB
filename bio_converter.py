@@ -176,6 +176,14 @@ begin mrbayes;
 end;
 """)
 
+def print_stdout(filename):
+    """Function to write to stdout the lines of a file.
+
+    Args:
+        filename (str): name of the file.
+    """
+    with open(filename, "r") as nexus:
+        print(nexus.read())
 
 if __name__ == '__main__':
     lines = open_fasta(sys.argv[1]) # getting the lines of the fasta file
@@ -192,3 +200,4 @@ if __name__ == '__main__':
     #  third_seq....
     nexus = sys.argv[1].rsplit('.')[0] + '.nex' # name of the nexus file
     write_nexus(nexus, lines, ntax=len(name_lines), nchar=nchar(lines), lines_formatted=True, name_lines_formatted=name_lines_formatted)
+    print_stdout(nexus)
