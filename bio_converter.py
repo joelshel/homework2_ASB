@@ -65,7 +65,7 @@ def handle_errors(filename, text=''):
     print(text, file = sys.stderr)
     sys.stderr = open(filename, 'w')
     print(text, file = sys.stderr)
-    sys.stderr = sys.__stderr__
+    sys.stderr = sys.__stderr__ # setting the stderr configurations to the original
 
 def open_fasta(fasta_file):
     """A function that returns the read lines of a fasta file.
@@ -81,14 +81,14 @@ def open_fasta(fasta_file):
         with open(fasta_file, 'r') as fasta:
             return fasta.readlines()
     except FileNotFoundError:
-        error_file = fasta_file.rsplit('.', 1)[0] + "_errors.txt"
+        error_file = fasta_file.rsplit('.', 1)[0] + "_errors.txt" # creating the error filename
         handle_errors(error_file, "We cannot find the file. Verify if you have typed the file name correctly.")
         exit()
 
-# quantas condições????
-# > até 99 caracteres
-# > com mais de 99 caracteres
-# sem >
+# how many conditions????
+# > until 99 characters
+# > more than 99 characters
+# without >
 
 
 def max_length(lines):
@@ -122,10 +122,10 @@ def nchar(lines):
     for line in lines:
         if ">" in line:
             count += 1
-        elif count == 2:
+        elif count == 2: # between the sequence names (or between 2 > symbols)
             break
         else:
-            length += len(line.strip())
+            length += len(line.strip()) # counting the sequence length
     return length
 
 
@@ -154,12 +154,12 @@ MATRIX""")
         for line in lines:
             if '>' in line:
                 if lines_formatted:
-                    nexus.write('\n' + name_lines_formatted[counter] + '  ')
+                    nexus.write('\n' + name_lines_formatted[counter] + '  ') # finishing formating the sequence names
                     counter += 1
                 else:
-                    nexus.write('\n' + line[:99].strip().replace(' ', '_').replace('>', ' ') + '  ')
+                    nexus.write('\n' + line[:99].strip().replace(' ', '_').replace('>', ' ') + '  ') # printing normally the sequence names
             elif line == "\n":
-                pass
+                continue
             else:
                 nexus.write(line.strip())
 
@@ -178,18 +178,17 @@ end;
 
 
 if __name__ == '__main__':
-    lines = open_fasta(sys.argv[1])
-    name_lines = tuple(filter(lambda lines='': '>' in lines.strip()[0:1], lines))
+    lines = open_fasta(sys.argv[1]) # getting the lines of the fasta file
+    name_lines = tuple(filter(lambda lines='': '>' in lines.strip()[0:1], lines)) # getting all lines with the character ">"
     max_len_lines = max_length(name_lines)
     if max_len_lines > 99:
-        error_file = sys.argv[1].rsplit('.', 1)[0] + "_errors.txt"
+        error_file = sys.argv[1].rsplit('.', 1)[0] + "_errors.txt" # telling the user that the sequences names have more than 99 characters
         handle_errors(error_file, "WARNING: some of your data names had passed the character limit and they'll be limited to 99 characters.")
-    max_len_lines = max_len_lines if max_len_lines < 100 else 99
+    max_len_lines = max_len_lines if max_len_lines < 100 else 99 # variable that limits the length of the sequence names
+    # formating the name of the sequences
     name_lines_formatted = tuple(map(lambda line='': ' '*(max_len_lines-len(line)) + line.strip()[:100].replace(' ', '_').replace('>', ' '), name_lines))
     #  first_seq....
     # second seq....
     #  third_seq....
-    make_nexus = lambda fasta_file='': fasta_file.split('.')[0] + '.nex'
-    nexus = make_nexus(sys.argv[1])
+    nexus = sys.argv[1].rsplit('.')[0] + '.nex' # name of the nexus file
     write_nexus(nexus, lines, ntax=len(name_lines), nchar=nchar(lines), lines_formatted=True, name_lines_formatted=name_lines_formatted)
-
