@@ -54,13 +54,21 @@ end;
 
 import sys
 
+
+def handle_errors(text='', filename=''):
+    print(text, file = sys.stderr)
+    sys.stderr = open(filename, 'w')
+    print(text, file = sys.stderr)
+    sys.stderr = sys.__stderr__
+
 def open_fasta(fasta_file=''):
     try:
         with open(fasta_file, 'r') as fasta:
             return fasta.readlines()
     except FileNotFoundError:
-        pass
-
+        error_file = fasta_file.rsplit('.', 1)[0] + "_errors.txt"
+        handle_errors("We cannot find the file. Verify if you have typed the file name correctly.", error_file)
+        exit()
 
 # quantas condições????
 # > até 99 caracteres
@@ -130,14 +138,16 @@ end;
 if __name__ == '__main__':
     lines = open_fasta(sys.argv[1])
     name_lines = tuple(filter(lambda lines='': '>' in lines.strip()[0:1], lines))
-    max_len = max_length(name_lines)
-    max_len = max_len if max_len < 100 else 99
-    name_lines_formated = tuple(map(lambda line='': ' '*(max_len-len(line)) + line.strip()[:100].replace(' ', '_').replace('>', ' '), name_lines))
+    max_len_lines = max_length(name_lines)
+    if max_len_lines > 99:
+        error_file = sys.argv[1].rsplit('.', 1)[0] + "_errors.txt"
+        handle_errors("WARNING: some of your data names had passed the character limit and they'll be limited to 99 characters.", error_file)
+    max_len_lines = max_len_lines if max_len_lines < 100 else 99
+    name_lines_formated = tuple(map(lambda line='': ' '*(max_len_lines-len(line)) + line.strip()[:100].replace(' ', '_').replace('>', ' '), name_lines))
     #  first_seq....
     # second seq....
     #  third_seq....
     make_nexus = lambda fasta_file='': fasta_file.split('.')[0] + '.nex'
     nexus = make_nexus(sys.argv[1])
-    nchar = nchar(lines)
-    write_nexus(nexus, lines, True, name_lines_formated, ntax=len(name_lines), nchar=nchar)
+    write_nexus(nexus, lines, True, name_lines_formated, ntax=len(name_lines), nchar=nchar(lines))
 
