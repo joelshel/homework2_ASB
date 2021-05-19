@@ -141,6 +141,7 @@ def write_nexus(nex_file, lines, ntax, nchar, lines_formatted=False, name_lines_
         lines_formatted (bool, optional): If true the name lines will be formatted according to name_lines_formatted. Defaults to False.
         name_lines_formatted (list of str, optional): your name sequences with your formatation. Defaults to ''.
     """    
+    mb_file = nex_file.rsplit('.')[0]
     with open(nex_file, 'w') as nexus:
         nexus.write(f"""#NEXUS
 
@@ -170,9 +171,9 @@ END;
 begin mrbayes;
   set autoclose=yes;
   outgroup {sys.argv[2]};
-  mcmcp ngen={sys.argv[3]} printfreq=1000 samplefreq=100 diagnfreq=1000 nchains=4 savebrlens=yes filename=MyRun01;
+  mcmcp ngen={sys.argv[3]} printfreq=1000 samplefreq=100 diagnfreq=1000 nchains=4 savebrlens=yes filename={mb_file};
   mcmc;
-  sumt filename=MyRun01;
+  sumt filename={mb_file};
 end;
 """)
 
