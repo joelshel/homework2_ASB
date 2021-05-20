@@ -1,6 +1,6 @@
 # homework2_ASB
 The second homework of my ASB group.  
-A program to convert fasta files in nexus files.
+A program to convert fasta files in nexus files. It also prints the output to **stdout**.
 
 ## How to use
 This terminal program is very simple do use. All you need is call it with all its arguments. It has 3 arguments. The first argument is the fasta filename,
