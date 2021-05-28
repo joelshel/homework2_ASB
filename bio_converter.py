@@ -138,7 +138,6 @@ def verify_equal_names(name_list):
     Returns:
         list of str: The sequence names edited if are equal names.
     """
-    print(len(name_list))
     for index_name in range(len(name_list)):
         counter = 2
         for next_index_name in range(index_name+1, len(name_list)):
