@@ -129,8 +129,27 @@ def nchar(lines):
     return length
 
 
+def verify_equal_names(name_list):
+    """Function to edit the equal sequence names.
 
-def write_nexus(nex_file, lines, ntax, nchar, lines_formatted=False, name_lines_formatted=''):
+    Args:
+        name_list (list of str): A list with all the sequence names.
+
+    Returns:
+        list of str: The sequence names edited if are equal names.
+    """
+    print(len(name_list))
+    for index_name in range(len(name_list)):
+        counter = 2
+        for next_index_name in range(index_name+1, len(name_list)):
+            if name_list[index_name] == name_list[next_index_name]:
+                name_list[next_index_name] = name_list[next_index_name].strip()[:100-len(str(counter))] + str(counter)
+                counter += 1
+    return name_list
+
+
+
+def write_nexus(nex_file, lines, ntax, nchar, name_lines=''):
     """A function to write a nexus file via a fasta file.
 
     Args:
@@ -150,15 +169,11 @@ DIMENSIONS NTAX={ntax} NCHAR={nchar};
 FORMAT DATATYPE=DNA MISSING=N GAP=-;
 MATRIX""")
 
-        if lines_formatted:
-            counter = 0
-        for line in lines:
+        counter = 0
+        for line in lines:  # writing the lines
             if '>' in line:
-                if lines_formatted:
-                    nexus.write('\n' + name_lines_formatted[counter] + '  ') # finishing formating the sequence names
-                    counter += 1
-                else:
-                    nexus.write('\n' + line[:99].strip().replace(' ', '_').replace('>', ' ') + '  ') # printing normally the sequence names
+                nexus.write(name_lines[counter])
+                counter += 1
             elif line == "\n":
                 continue
             else:
@@ -186,19 +201,28 @@ def print_stdout(filename):
     with open(filename, "r") as nexus:
         print(nexus.read())
 
-if __name__ == '__main__':
+
+def main():
+    """
+    The main function.
+    """
     lines = open_fasta(sys.argv[1]) # getting the lines of the fasta file
-    name_lines = tuple(filter(lambda lines='': '>' in lines.strip()[0:1], lines)) # getting all lines with the character ">"
+    name_lines = list(filter(lambda lines='': '>' in lines.strip()[0:1], lines)) # getting all lines with the character ">"
     max_len_lines = max_length(name_lines)
     if max_len_lines > 99:
-        error_file = sys.argv[1].rsplit('.', 1)[0] + "_errors.txt" # telling the user that the sequences names have more than 99 characters
+        error_file = sys.argv[1].rsplit('.', 1)[0] + "_messages.txt" # telling the user that the sequences names have more than 99 characters
         handle_errors(error_file, "WARNING: some of your data names had passed the character limit and they'll be limited to 99 characters.")
     max_len_lines = max_len_lines if max_len_lines < 100 else 99 # variable that limits the length of the sequence names
     # formating the name of the sequences
-    name_lines_formatted = tuple(map(lambda line='': ' '*(max_len_lines-len(line)) + line.strip()[:100].replace(' ', '_').replace('>', ' '), name_lines))
+    name_lines = verify_equal_names(name_lines)
+    name_lines_formatted = list(map(lambda line='': '\n' + ' '*(max_len_lines-len(line)) + line.strip()[:100].replace(' ', '_').replace('>', ' ') + '  ', name_lines))
     #  first_seq....
     # second seq....
     #  third_seq....
     nexus = sys.argv[1].rsplit('.')[0] + '.nex' # name of the nexus file
-    write_nexus(nexus, lines, ntax=len(name_lines), nchar=nchar(lines), lines_formatted=True, name_lines_formatted=name_lines_formatted)
+    write_nexus(nexus, lines, ntax=len(name_lines), nchar=nchar(lines), name_lines=name_lines_formatted)
     print_stdout(nexus)
+
+
+if __name__ == '__main__':
+    main()
