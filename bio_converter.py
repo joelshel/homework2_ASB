@@ -129,6 +129,21 @@ def nchar(lines):
     return length
 
 
+def find_outgroup_index(outgroup='', seq_names=''):
+    """Function to return the index of the outgroup (because of the cut of the name sequences).
+
+    Args:
+        outgroup (str, optional): The name of the outgroup. Defaults to ''.
+        seq_names (list of str, optional): A list with all sequence names in order. Defaults to ''.
+
+    Returns:
+        int: The index of the outgroup.
+    """
+    for c in range(len(seq_names)):
+        if seq_names[c].replace('>', '').strip().lower() == outgroup.lower():
+            return c
+
+
 def verify_equal_names(name_list):
     """Function to edit the equal sequence names.
 
@@ -147,7 +162,7 @@ def verify_equal_names(name_list):
     return name_list
 
 
-def write_nexus(nex_file, lines, ntax, nchar, name_lines=''):
+def write_nexus(nex_file, lines, ntax, nchar, outgroup_index, name_lines=''):
     """A function to write a nexus file via a fasta file.
 
     Args:
@@ -182,7 +197,7 @@ END;
 
 begin mrbayes;
   set autoclose=yes;
-  outgroup {sys.argv[2]};
+  outgroup {name_lines[outgroup_index].strip()};
   mcmcp ngen={sys.argv[3]} printfreq=1000 samplefreq=100 diagnfreq=1000 nchains=4 savebrlens=yes filename={mb_file};
   mcmc;
   sumt filename={mb_file};
@@ -206,6 +221,7 @@ def main():
     """
     lines = open_fasta(sys.argv[1]) # getting the lines of the fasta file
     name_lines = list(filter(lambda lines='': '>' in lines.strip()[0:1], lines)) # getting all lines with the character ">"
+    outgroup_index = find_outgroup_index(sys.argv[2], name_lines)
     name_lines = list(map(lambda line='': line.replace('>', '').strip()[:99], name_lines)) # cutting all sequence names to 99 characters
     max_len_lines = max_length(name_lines)
     if max_len_lines >= 99:
@@ -219,7 +235,7 @@ def main():
     # second seq....
     #  third_seq....
     nexus = sys.argv[1].rsplit('.')[0] + '.nex' # nexus file name
-    write_nexus(nexus, lines, ntax=len(name_lines), nchar=nchar(lines), name_lines=name_lines_formatted)
+    write_nexus(nexus, lines, ntax=len(name_lines), nchar=nchar(lines), outgroup_index=outgroup_index, name_lines=name_lines_formatted)
     print_stdout(nexus)
 
 
