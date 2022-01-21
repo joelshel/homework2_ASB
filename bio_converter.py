@@ -189,7 +189,7 @@ MATRIX""")
             elif line == "\n":
                 continue
             else:
-                nexus.write(line.strip())
+                nexus.write(line.strip().upper())
 
         nexus.write(f"""
   ;
