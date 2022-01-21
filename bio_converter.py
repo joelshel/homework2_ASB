@@ -224,6 +224,7 @@ def main():
     """
     lines = open_fasta(sys.argv[1]) # getting the lines of the fasta file
     name_lines = list(filter(lambda lines='': '>' in lines.strip()[0:1], lines)) # getting all lines with the character ">"
+    name_lines = [name_line.replace(",", "") for name_line in name_lines]
     if len(sys.argv) > 3:
         outgroup_index = find_outgroup_index(sys.argv[3], name_lines)
     else:
