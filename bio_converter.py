@@ -196,9 +196,12 @@ MATRIX""")
 END;
 
 begin mrbayes;
-  set autoclose=yes;
-  outgroup {name_lines[outgroup_index].strip()};
-  mcmcp ngen={sys.argv[3]} printfreq=1000 samplefreq=100 diagnfreq=1000 nchains=4 savebrlens=yes filename={mb_file};
+  set quitonerror=no;
+  set autoclose=yes;""")
+        if outgroup_index:
+            nexus.write("  outgroup {name_lines[outgroup_index].strip()};")
+        nexus.write(f"""
+  mcmcp ngen={sys.argv[2]} printfreq=1000 samplefreq=100 diagnfreq=1000 nchains=4 savebrlens=yes filename={mb_file};
   mcmc;
   sumt filename={mb_file};
 end;
@@ -221,7 +224,10 @@ def main():
     """
     lines = open_fasta(sys.argv[1]) # getting the lines of the fasta file
     name_lines = list(filter(lambda lines='': '>' in lines.strip()[0:1], lines)) # getting all lines with the character ">"
-    outgroup_index = find_outgroup_index(sys.argv[2], name_lines)
+    if len(sys.argv) > 3:
+        outgroup_index = find_outgroup_index(sys.argv[3], name_lines)
+    else:
+        outgroup_index = None
     name_lines = list(map(lambda line='': line.replace('>', '').strip()[:99], name_lines)) # cutting all sequence names to 99 characters
     max_len_lines = max_length(name_lines)
     if max_len_lines >= 99:
